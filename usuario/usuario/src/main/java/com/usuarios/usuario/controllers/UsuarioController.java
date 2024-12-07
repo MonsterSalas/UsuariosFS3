@@ -19,6 +19,8 @@ import com.usuarios.usuario.dto.UsuarioDTO;
 import com.usuarios.usuario.models.Usuario;
 import com.usuarios.usuario.services.UsuarioService;
 
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -28,6 +30,8 @@ public class UsuarioController {
     @PostMapping("/crear")
     public ResponseEntity<ResponseDTO> crearUsuario(@RequestBody UsuarioDTO usuarioDTO) {
         try {
+            log.debug("Recibiendo solicitud de creación de usuario: {}", usuarioDTO);
+            
             // Validaciones básicas
             if (usuarioDTO.getUsername() == null || usuarioDTO.getUsername().trim().isEmpty()) {
                 return ResponseEntity.badRequest()
@@ -39,15 +43,18 @@ public class UsuarioController {
                     .body(new ResponseDTO("La contraseña es requerida", null, false));
             }
             
+            if (usuarioDTO.getNombreCompleto() == null || usuarioDTO.getNombreCompleto().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(new ResponseDTO("El nombre completo es requerido", null, false));
+            }
+            
             if (usuarioDTO.getRolId() == null) {
                 return ResponseEntity.badRequest()
                     .body(new ResponseDTO("El rol es requerido", null, false));
             }
             
-            // Crear usuario
             Usuario usuarioCreado = usuarioService.crearUsuario(usuarioDTO);
             
-            // Retornar respuesta exitosa
             return ResponseEntity.ok(new ResponseDTO(
                 "Usuario creado exitosamente",
                 usuarioCreado,
@@ -55,11 +62,11 @@ public class UsuarioController {
             ));
             
         } catch (RuntimeException e) {
-            // Manejar errores conocidos
+            log.error("Error al crear usuario", e);
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ResponseDTO(e.getMessage(), null, false));
         } catch (Exception e) {
-            // Manejar errores inesperados
+            log.error("Error inesperado al crear usuario", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ResponseDTO(
                     "Error al crear el usuario: " + e.getMessage(),
@@ -68,7 +75,6 @@ public class UsuarioController {
                 ));
         }
     }
-    
     @GetMapping
     public List<Usuario> getAllUsuarios() {
         return usuarioService.findAll();

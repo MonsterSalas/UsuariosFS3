@@ -9,4 +9,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Query simple para verificar si existe el usuario con username y password
     boolean existsByUsernameAndPassword(String username, String password);
 
+    boolean existsByNombreCompleto(String nombreCompleto);
+
 }

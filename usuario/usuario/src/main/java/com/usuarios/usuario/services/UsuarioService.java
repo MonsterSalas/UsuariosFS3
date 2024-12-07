@@ -25,17 +25,28 @@ public class UsuarioService {
             throw new RuntimeException("El username ya está en uso");
         }
         
+        // Validar que el nombreCompleto no esté vacío
+        if (usuarioDTO.getNombreCompleto() == null || usuarioDTO.getNombreCompleto().trim().isEmpty()) {
+            throw new RuntimeException("El nombre completo es requerido");
+        }
+        
         // Validar y obtener el rol
         Rol rol = rolRepository.findById(usuarioDTO.getRolId())
             .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
             
         // Crear nuevo usuario
         Usuario nuevoUsuario = new Usuario();
-        nuevoUsuario.setUsername(usuarioDTO.getUsername());
-        nuevoUsuario.setPassword(usuarioDTO.getPassword()); // Aquí deberías agregar encriptación
-        nuevoUsuario.setRol(rol);
         
-        return usuarioRepository.save(nuevoUsuario);
+        try {
+            nuevoUsuario.setUsername(usuarioDTO.getUsername());
+            nuevoUsuario.setNombreCompleto(usuarioDTO.getNombreCompleto());
+            nuevoUsuario.setPassword(usuarioDTO.getPassword());
+            nuevoUsuario.setRol(rol);
+            
+            return usuarioRepository.save(nuevoUsuario);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al guardar el usuario: " + e.getMessage());
+        }
     }
     public List<Usuario> findAll() {
         return usuarioRepository.findAll();
